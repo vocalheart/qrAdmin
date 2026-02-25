@@ -9,9 +9,9 @@ import {
 
 const menuItems = [
   { name: "Dashboard",    path: "/dashboard",    icon: LayoutDashboard },
-  { name: "QR Codes",     path: "/generate-qr",  icon: QrCode },
-  { name: "Subscription", path: "/subscribe",    icon: FileText },
-  { name: "Reviews",      path: "/submissions",  icon: Star },
+   { name: "admins",      path: "/admins",  icon: Star },
+   { name: "users",       path: "/users",  icon: Star },
+    { name: "Payments",   path: "/payments",  icon: Star },
 ];
 
 export default function Sidebar({ isCollapsed, setIsCollapsed }) {
