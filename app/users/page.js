@@ -3,6 +3,19 @@
 import React, { useEffect, useState } from "react";
 import api from "../lib/axios";
 
+// Heroicons v2 – import only what you need
+import {
+  UsersIcon,
+  FireIcon,
+  NoSymbolIcon,
+  UserIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  ClockIcon,
+  ShieldCheckIcon,
+  ShieldExclamationIcon,
+} from "@heroicons/react/24/outline";
+
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -12,14 +25,12 @@ export default function UserManagement() {
   const [totalUsers, setTotalUsers] = useState(0);
   const LIMIT = 10;
 
-  // Stats Cards
   const [stats, setStats] = useState({
     total: 0,
     todayActive: 0,
     blocked: 0,
   });
 
-  // Toast
   const [toast, setToast] = useState({
     show: false,
     message: "",
@@ -28,10 +39,9 @@ export default function UserManagement() {
 
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: "", type: "success" }), 3000);
+    setTimeout(() => setToast({ show: false, message: "", type: "success" }), 3200);
   };
 
-  // Fetch Stats for Cards
   const fetchStats = async () => {
     try {
       const [allRes, blockedRes, todayRes] = await Promise.all([
@@ -50,12 +60,10 @@ export default function UserManagement() {
     }
   };
 
-  // Fetch Users based on Tab
   const fetchUsers = async (page = 1, tab = currentTab) => {
     try {
       setLoading(true);
       let url = "/admin/users/all";
-
       if (tab === "blocked") url = "/admin/users/blocked";
       if (tab === "today") url = "/admin/users/today-active";
 
@@ -67,24 +75,24 @@ export default function UserManagement() {
       setCurrentPage(page);
     } catch (err) {
       console.error("Fetch Users Error:", err);
-      showToast("Failed to load users. Please try again.", "error");
+      showToast("Failed to load users", "error");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchStats();        // Load stats once
+    fetchStats();
     fetchUsers(1, currentTab);
   }, [currentTab]);
 
-  // Block / Unblock User
-  const handleBlockToggle = async (id, isBlocked) => {
+  const handleBlockToggle = async (id, currentlyBlocked) => {
     try {
       await api.patch(`/admin/users/block/${id}`);
-      showToast(isBlocked ? "✅ User unblocked successfully" : "🚫 User blocked successfully");
-      
-      // Refresh everything
+      showToast(
+        currentlyBlocked ? "✅ User unblocked" : "🚫 User blocked",
+        "success"
+      );
       fetchUsers(currentPage, currentTab);
       fetchStats();
     } catch (err) {
@@ -92,203 +100,313 @@ export default function UserManagement() {
     }
   };
 
-  // Format Last Login
   const formatLastLogin = (date) => {
-    if (!date) return "Never logged in";
+    if (!date) return "Never";
     const d = new Date(date);
-    return d.toLocaleDateString("en-IN", {
+    return d.toLocaleString("en-IN", {
       day: "numeric",
       month: "short",
       year: "numeric",
-    }) + " at " + d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
+  const tabs = [
+    { key: "all", label: "All Users" },
+    { key: "blocked", label: "Blocked" },
+    { key: "today", label: "Active Today" },
+  ];
+
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600 mt-1">Manage all registered users</p>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        {/* Total Users */}
-        <div className="bg-white rounded-3xl shadow-xl p-6 flex items-center gap-5">
-          <div className="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center text-3xl">
-            👥
-          </div>
+    <div className="min-h-screen  dark:bg-gray-950 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <p className="text-gray-500 text-sm">Total Users</p>
-            <p className="text-4xl font-bold text-gray-900">{stats.total.toLocaleString("en-IN")}</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+              User Management
+            </h1>
+            <p className="mt-1 text-gray-600 dark:text-gray-400">
+              View and manage all registered users
+            </p>
           </div>
         </div>
 
-        {/* Today Active */}
-        <div className="bg-white rounded-3xl shadow-xl p-6 flex items-center gap-5">
-          <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-3xl">
-            🔥
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm">Today Active</p>
-            <p className="text-4xl font-bold text-emerald-600">{stats.todayActive.toLocaleString("en-IN")}</p>
-          </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 md:gap-6 mb-10">
+          {[
+            {
+              title: "Total Users",
+              value: stats.total,
+              icon: UsersIcon,
+              color: "indigo",
+              bg: "indigo-100 dark:indigo-950/40",
+              text: "indigo-700 dark:indigo-300",
+            },
+            {
+              title: "Active Today",
+              value: stats.todayActive,
+              icon: FireIcon,
+              color: "emerald",
+              bg: "emerald-100 dark:emerald-950/40",
+              text: "emerald-700 dark:emerald-300",
+            },
+            {
+              title: "Blocked Users",
+              value: stats.blocked,
+              icon: NoSymbolIcon,
+              color: "red",
+              bg: "red-100 dark:red-950/40",
+              text: "red-700 dark:red-300",
+            },
+          ].map((stat, i) => (
+            <div
+              key={i}
+              className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-5 md:p-6 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
+            >
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-lg ${stat.bg}`}>
+                  <stat.icon className={`w-7 h-7 text-${stat.color}`} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                    {stat.title}
+                  </p>
+                  <p className={`text-3xl md:text-4xl font-bold text-gray-900 dark:text-white`}>
+                    {stat.value.toLocaleString("en-IN")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Blocked Users */}
-        <div className="bg-white rounded-3xl shadow-xl p-6 flex items-center gap-5">
-          <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center text-3xl">
-            ⛔
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm">Blocked Users</p>
-            <p className="text-4xl font-bold text-red-600">{stats.blocked.toLocaleString("en-IN")}</p>
-          </div>
+        {/* Tabs */}
+        <div className="flex overflow-x-auto border-b border-gray-200 dark:border-gray-800 mb-6 pb-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => {
+                setCurrentTab(tab.key);
+                setCurrentPage(1);
+              }}
+              className={`flex-shrink-0 px-6 py-3 font-medium text-sm transition-all whitespace-nowrap border-b-2 ${
+                currentTab === tab.key
+                  ? "border-indigo-600 text-indigo-700 dark:text-indigo-300 dark:border-indigo-500"
+                  : "border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-gray-200">
-        {[
-          { key: "all", label: "All Users" },
-          { key: "blocked", label: "Blocked Users" },
-          { key: "today", label: "Today Active" },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => {
-              setCurrentTab(tab.key);
-              setCurrentPage(1);
-            }}
-            className={`px-8 py-4 font-medium text-sm transition-all border-b-2 ${
-              currentTab === tab.key
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+        {/* Table / Cards Container */}
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+          {loading ? (
+            <div className="py-20 text-center">
+              <div className="animate-spin w-10 h-10 mx-auto border-4 border-indigo-500 border-t-transparent rounded-full"></div>
+              <p className="mt-5 text-gray-600 dark:text-gray-400">Loading users...</p>
+            </div>
+          ) : users.length === 0 ? (
+            <div className="py-16 text-center text-gray-500 dark:text-gray-400">
+              No users found in this category
+            </div>
+          ) : (
+            <>
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                  <thead className="bg-gray-50 dark:bg-gray-800/50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">User</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Contact</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Last Login</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Status</th>
+                      <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                    {users.map((user) => (
+                      <tr
+                        key={user._id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <UserIcon className="w-5 h-5 text-gray-400" />
+                            <div>
+                              <div className="font-medium text-gray-900 dark:text-gray-100">
+                                {user.username}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">
+                                <EnvelopeIcon className="w-4 h-4" />
+                                {user.email}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                          {user.phone ? (
+                            <div className="flex items-center gap-1.5">
+                              <PhoneIcon className="w-4 h-4" />
+                              {user.phone}
+                            </div>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                          <div className="flex items-center gap-1.5">
+                            <ClockIcon className="w-4 h-4" />
+                            {formatLastLogin(user.lastLogin)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                              user.isBlocked
+                                ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                                : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                            }`}
+                          >
+                            {user.isBlocked ? (
+                              <ShieldExclamationIcon className="w-4 h-4" />
+                            ) : (
+                              <ShieldCheckIcon className="w-4 h-4" />
+                            )}
+                            {user.isBlocked ? "Blocked" : "Active"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <button
+                            onClick={() => handleBlockToggle(user._id, user.isBlocked)}
+                            className={`px-5 py-2 text-sm font-medium rounded-lg transition-colors ${
+                              user.isBlocked
+                                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                                : "bg-red-600 hover:bg-red-700 text-white"
+                            }`}
+                          >
+                            {user.isBlocked ? "Unblock" : "Block"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-      {/* Table Card */}
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-        {loading ? (
-          <div className="p-12 text-center">
-            <div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading users...</p>
-          </div>
-        ) : (
-          <>
-            <table className="w-full">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-5 text-left font-semibold text-gray-700">Username</th>
-                  <th className="p-5 text-left font-semibold text-gray-700">Email</th>
-                  <th className="p-5 text-left font-semibold text-gray-700">Phone</th>
-                  <th className="p-5 text-left font-semibold text-gray-700">Last Login</th>
-                  <th className="p-5 text-left font-semibold text-gray-700">Status</th>
-                  <th className="p-5 text-center font-semibold text-gray-700">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y">
+              {/* Mobile Cards */}
+              <div className="md:hidden divide-y divide-gray-200 dark:divide-gray-800">
                 {users.map((user) => (
-                  <tr key={user._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="p-5 font-medium text-gray-900">{user.username}</td>
-                    <td className="p-5 text-gray-600">{user.email}</td>
-                    <td className="p-5 text-gray-600">{user.phone || "—"}</td>
-                    <td className="p-5 text-gray-600 text-sm">
-                      {formatLastLogin(user.lastLogin)}
-                    </td>
-                    <td className="p-5">
+                  <div
+                    key={user._id}
+                    className="p-5 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors space-y-3"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <UserIcon className="w-6 h-6 text-gray-400" />
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">
+                            {user.username}
+                          </p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+
                       <span
-                        className={`px-4 py-1.5 rounded-full text-sm font-semibold ${
+                        className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
                           user.isBlocked
-                            ? "bg-red-100 text-red-700"
-                            : "bg-emerald-100 text-emerald-700"
+                            ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                            : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
                         }`}
                       >
                         {user.isBlocked ? "Blocked" : "Active"}
                       </span>
-                    </td>
+                    </div>
 
-                    <td className="p-5">
-                      <div className="flex justify-center">
-                        <button
-                          onClick={() => handleBlockToggle(user._id, user.isBlocked)}
-                          className={`px-6 py-2 text-sm font-medium rounded-xl transition-all ${
-                            user.isBlocked
-                              ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                              : "bg-red-500 hover:bg-red-600 text-white"
-                          }`}
-                        >
-                          {user.isBlocked ? "Unblock" : "Block"}
-                        </button>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                        <PhoneIcon className="w-4 h-4" />
+                        {user.phone || "—"}
                       </div>
-                    </td>
-                  </tr>
+                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                        <ClockIcon className="w-4 h-4" />
+                        {formatLastLogin(user.lastLogin)}
+                      </div>
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        onClick={() => handleBlockToggle(user._id, user.isBlocked)}
+                        className={`w-full py-2.5 text-sm font-medium rounded-lg ${
+                          user.isBlocked
+                            ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                            : "bg-red-600 hover:bg-red-700 text-white"
+                        }`}
+                      >
+                        {user.isBlocked ? "Unblock User" : "Block User"}
+                      </button>
+                    </div>
+                  </div>
                 ))}
-
-                {users.length === 0 && (
-                  <tr>
-                    <td colSpan="6" className="text-center py-20 text-gray-500">
-                      No users found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-
-            {/* Pagination */}
-            {totalUsers > 0 && (
-              <div className="flex justify-between items-center px-6 py-4 bg-gray-50 border-t">
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => fetchUsers(currentPage - 1)}
-                  className={`px-6 py-2 rounded-xl font-medium transition-all ${
-                    currentPage === 1
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-indigo-600 hover:bg-indigo-700 text-white"
-                  }`}
-                >
-                  ← Previous
-                </button>
-
-                <span className="text-gray-700 font-medium">
-                  Page <span className="font-semibold">{currentPage}</span> of {totalPages} 
-                  ({totalUsers} {currentTab === "blocked" ? "blocked" : currentTab === "today" ? "active today" : "total"} users)
-                </span>
-
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => fetchUsers(currentPage + 1)}
-                  className={`px-6 py-2 rounded-xl font-medium transition-all ${
-                    currentPage === totalPages
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-indigo-600 hover:bg-indigo-700 text-white"
-                  }`}
-                >
-                  Next →
-                </button>
               </div>
-            )}
-          </>
+
+              {/* Pagination */}
+              {totalUsers > 0 && (
+                <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-t dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/50">
+                  <div className="text-sm text-gray-700 dark:text-gray-300 text-center sm:text-left">
+                    Showing {users.length} of {totalUsers.toLocaleString("en-IN")}{" "}
+                    {currentTab === "blocked"
+                      ? "blocked"
+                      : currentTab === "today"
+                      ? "active today"
+                      : "total"}{" "}
+                    users
+                  </div>
+
+                  <div className="flex justify-center sm:justify-end gap-3">
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() => fetchUsers(currentPage - 1)}
+                      className="px-5 py-2 rounded-lg font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                    >
+                      ← Prev
+                    </button>
+
+                    <span className="px-4 py-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-medium">
+                      {currentPage} / {totalPages}
+                    </span>
+
+                    <button
+                      disabled={currentPage === totalPages}
+                      onClick={() => fetchUsers(currentPage + 1)}
+                      className="px-5 py-2 rounded-lg font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Toast */}
+        {toast.show && (
+          <div
+            className={`fixed bottom-4 left-4 right-4 sm:top-6 sm:right-6 sm:left-auto px-5 py-4 rounded-xl shadow-2xl text-white z-50 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-5 ${
+              toast.type === "success" ? "bg-emerald-600" : "bg-red-600"
+            }`}
+          >
+            {toast.message}
+          </div>
         )}
       </div>
-
-      {/* Toast Notification */}
-      {toast.show && (
-        <div
-          className={`fixed top-6 right-6 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-[60] text-white transition-all duration-300 ${
-            toast.type === "success" ? "bg-emerald-600" : "bg-red-600"
-          }`}
-        >
-          <span>{toast.message}</span>
-        </div>
-      )}
     </div>
   );
 }
