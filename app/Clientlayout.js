@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Sidebar from "./components/sidebar/page";
 import Navbar from "./components/Navbar";
@@ -12,25 +12,31 @@ export default function ClientLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const { admin, loading, isAuthenticated } = useAuth();
+  const { loading, isAuthenticated } = useAuth();
 
-  // Auth pages jahan layout clean chahiye
   const hideLayoutRoutes = ["/login", "/signup"];
   const shouldHideLayout = hideLayoutRoutes.includes(pathname);
 
-  //  Protect dashboard routes
   const protectedRoutes = ["/dashboard", "/admin", "/qr", "/settings"];
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
 
-  // ⛔ Redirect if not logged in
-  if (!loading && isProtectedRoute && !isAuthenticated) {
-    router.push("/login");
-    return null;
-  }
+  //  Redirect to login if NOT authenticated
+  useEffect(() => {
+    if (!loading && isProtectedRoute && !isAuthenticated) {
+      router.replace("/login"); // replace instead of push
+    }
+  }, [loading, isAuthenticated, isProtectedRoute, router]);
 
-  // ⏳ Loading state (while checking /admin/me)
+  //  Redirect to dashboard if already logged in
+  useEffect(() => {
+    if (!loading && isAuthenticated && (pathname === "/login" || pathname === "/signup")) {
+      router.replace("/dashboard");
+    }
+  }, [loading, isAuthenticated, pathname, router]);
+
+  //  VERY IMPORTANT: wait until auth check completes
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -41,7 +47,6 @@ export default function ClientLayout({ children }) {
 
   return (
     <>
-      {/*  Sidebar ONLY when logged in AND not auth pages */}
       {!shouldHideLayout && isAuthenticated && (
         <Sidebar
           isCollapsed={isCollapsed}
@@ -50,7 +55,7 @@ export default function ClientLayout({ children }) {
       )}
 
       <div
-        className={`flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
+        className={`flex flex-col min-h-screen transition-all duration-300 ${
           shouldHideLayout
             ? "ml-0"
             : isAuthenticated
@@ -60,14 +65,12 @@ export default function ClientLayout({ children }) {
             : "ml-0"
         }`}
       >
-        {/* Navbar only when logged */}
         {!shouldHideLayout && isAuthenticated && <Navbar />}
 
         <main className="flex-grow p-4 md:p-6 overflow-x-hidden">
           {children}
         </main>
 
-        {/* Footer only when logged */}
         {!shouldHideLayout && isAuthenticated && <Footer />}
       </div>
     </>

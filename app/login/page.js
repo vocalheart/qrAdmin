@@ -38,7 +38,7 @@ export default function Login() {
       const meRes = await api.get("/admin/me");
 
       if (meRes.data?.success) {
-        router.push("/dashboard");
+             router.replace("/dashboard"); // 🔥 replace better than push
       } else {
         setError("Session verify nahi hua. Dobara try karo.");
       }
@@ -47,9 +47,9 @@ export default function Login() {
       console.error("LOGIN ERROR:", err);
 
       if (err.code === "ERR_NETWORK") {
-        setError("❌ Backend se connect nahi ho pa raha. Check karo ki server chal raha hai aur CORS sahi hai.");
+        setError(" Backend se connect nahi ho pa raha. Check karo ki server chal raha hai aur CORS sahi hai.");
       } else if (err.response?.status === 401) {
-        setError("❌ Email ya password galat hai.");
+        setError("Email ya password galat hai.");
       } else if (err.response) {
         setError(err.response.data?.message || "Authentication failed");
       } else {

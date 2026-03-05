@@ -7,33 +7,43 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [admin, setAdmin] = useState(null);
   const [loading, setLoading] = useState(true);
+  //  Load admin from localStorage instantly (for refresh);
+  
+  useEffect(() => {
+    const storedAdmin = localStorage.getItem("admin");
+    if (storedAdmin) {
+      setAdmin(JSON.parse(storedAdmin));
+    }
+  }, []);
 
-  // 🔐 Fetch admin from cookie session
+  //  Verify session from cookie
   const fetchAdmin = async () => {
     try {
       const res = await api.get("/admin/me", {
-        withCredentials: true, // 🔥 MUST for cookie
+        withCredentials: true,
       });
 
       if (res.data?.success) {
         setAdmin(res.data.admin);
+        localStorage.setItem("admin", JSON.stringify(res.data.admin));
       } else {
         setAdmin(null);
+        localStorage.removeItem("admin");
       }
     } catch (error) {
-      // 401 = not logged in (normal case)
       setAdmin(null);
+      localStorage.removeItem("admin");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🚀 Auto session check on app load
+  //  Auto session check on app load
   useEffect(() => {
     fetchAdmin();
   }, []);
 
-  // 🔐 LOGIN (Production Safe)
+  //  LOGIN
   const login = async (email, password) => {
     try {
       setLoading(true);
@@ -45,18 +55,11 @@ export const AuthProvider = ({ children }) => {
       );
 
       if (res.data?.success) {
-        // 🔥 IMPORTANT: wait for cookie to be stored
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        // Save instantly (no flicker on refresh)
+        setAdmin(res.data.admin);
+        localStorage.setItem("admin", JSON.stringify(res.data.admin));
 
-        // Fetch fresh admin from cookie session
-        const meRes = await api.get("/admin/me", {
-          withCredentials: true,
-        });
-
-        if (meRes.data?.success) {
-          setAdmin(meRes.data.admin);
-          return { success: true };
-        }
+        return { success: true };
       }
 
       return { success: false, message: "Login failed" };
@@ -64,25 +67,22 @@ export const AuthProvider = ({ children }) => {
       return {
         success: false,
         message:
-          error.response?.data?.message ||
-          "Authentication failed",
+          error.response?.data?.message || "Authentication failed",
       };
     } finally {
       setLoading(false);
     }
   };
 
-  // 🚪 LOGOUT
+  //  LOGOUT
   const logout = async () => {
     try {
-      await api.post(
-        "/admin/logout",
-        {},
-        { withCredentials: true }
-      );
-      setAdmin(null);
+      await api.post("/admin/logout", {}, { withCredentials: true });
     } catch (err) {
       console.error("Logout error:", err);
+    } finally {
+      setAdmin(null);
+      localStorage.removeItem("admin"); //  IMPORTANT
     }
   };
 
@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         isAuthenticated: !!admin,
-        refreshSession: fetchAdmin, // manual refresh
+        refreshSession: fetchAdmin,
       }}
     >
       {children}
