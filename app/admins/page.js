@@ -8,16 +8,14 @@ export default function AdminManagement() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalAdmins, setTotalAdmins] = useState(0);
   const LIMIT = 10;
-
   // Toast
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
-
+  //ejkjeje
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -29,7 +27,6 @@ export default function AdminManagement() {
     setToast({ show: true, message, type });
     setTimeout(() => setToast({ show: false, message: "", type: "success" }), 3200);
   };
-
   const fetchAdmins = async (page = 1) => {
     try {
       setLoading(true);
