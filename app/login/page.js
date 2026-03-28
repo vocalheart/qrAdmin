@@ -18,7 +18,6 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
       // Step 1: Login - cookie automatically set ho jaayegi browser mein
       const res = await api.post("/admin/login", {
@@ -38,7 +37,7 @@ export default function Login() {
       const meRes = await api.get("/admin/me");
 
       if (meRes.data?.success) {
-             router.replace("/dashboard"); // 🔥 replace better than push
+             router.replace("/dashboard"); //  replace better than push
       } else {
         setError("Session verify nahi hua. Dobara try karo.");
       }
