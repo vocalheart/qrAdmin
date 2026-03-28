@@ -196,6 +196,9 @@ function Page() {
                       <p className="text-sm text-gray-700 font-medium">
                         Form ID: {qr.randomId}
                       </p>
+                       <p className="text-sm text-gray-700 font-medium">
+  Used: {qr.isActive ? "Yes" : "No"}
+</p>
                       <div className="flex items-center gap-2 mt-3 text-xs text-gray-500">
                         <User size={16} />
                         <span>{qr.admin?.name || "Unknown"}</span>
