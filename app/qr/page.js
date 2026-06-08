@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import api from "../lib/axios";
-import {Upload,QrCode,User,Eye,X,ChevronLeft,ChevronRight} from "lucide-react";
+import { Upload, QrCode, User, Eye, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 function Page() {
   const [loading, setLoading] = useState(false);
@@ -43,7 +43,7 @@ function Page() {
         formUrl: formData.formUrl,
       });
 
-      alert("✅ QR Code generated and uploaded successfully!");
+      alert("QR Code generated and uploaded successfully!");
 
       // List refresh karo
       getQrs(activeTab, 1);
@@ -154,17 +154,15 @@ function Page() {
               <div className="flex gap-2 bg-gray-100 p-1 rounded-2xl">
                 <button
                   onClick={() => handleTabChange("my")}
-                  className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    activeTab === "my" ? "bg-white shadow text-indigo-600" : "text-gray-600 hover:bg-white/60"
-                  }`}
+                  className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === "my" ? "bg-white shadow text-indigo-600" : "text-gray-600 hover:bg-white/60"
+                    }`}
                 >
                   My QR Codes
                 </button>
                 <button
                   onClick={() => handleTabChange("all")}
-                  className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    activeTab === "all" ? "bg-white shadow text-indigo-600" : "text-gray-600 hover:bg-white/60"
-                  }`}
+                  className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === "all" ? "bg-white shadow text-indigo-600" : "text-gray-600 hover:bg-white/60"
+                    }`}
                 >
                   All QR Codes
                 </button>
@@ -196,9 +194,9 @@ function Page() {
                       <p className="text-sm text-gray-700 font-medium">
                         Form ID: {qr.randomId}
                       </p>
-                       <p className="text-sm text-gray-700 font-medium">
-  Used: {qr.isActive ? "Yes" : "No"}
-</p>
+                      <p className="text-sm text-gray-700 font-medium">
+                        Used: {qr.isActive ? "Yes" : "No"}
+                      </p>
                       <div className="flex items-center gap-2 mt-3 text-xs text-gray-500">
                         <User size={16} />
                         <span>{qr.admin?.name || "Unknown"}</span>
@@ -266,9 +264,9 @@ function Page() {
               <div className="space-y-6">
                 <div>
                   <p className="text-gray-500 text-xs mb-1">FORM URL</p>
-                  <a 
-                    href={selectedQR.qrUrl} 
-                    target="_blank" 
+                  <a
+                    href={selectedQR.qrUrl}
+                    target="_blank"
                     rel="noreferrer"
                     className="text-indigo-600 break-all hover:underline font-medium"
                   >
